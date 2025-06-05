@@ -44,6 +44,19 @@ class SEDCTExplainer():
         self.image_segmentation = image_segmentation
 
 
+    def _check_compatibility(self) -> None:
+        # check the compatibility of the give objects
+        if self.classifier is not None and self.image_segmentation is not None:
+            if isinstance(self.classifier, TorchModelWrapper) and isinstance(self.image_segmentation, SKimageImageSegmentation):
+                raise ValueError(f"A classifier of the class TorchModelWrapper does not support images in numpy.ndaray format coming from a "
+                                f"object of the class SKimageImageSegmentation.")
+            if isinstance(self.classifier, SKLearnModelWrapper) and isinstance(self.image_segmentation, TorchImageSegmentation):
+                raise ValueError(f"A classifier of the class SKLearnModelWrapper does not support images in torch.Tensor format coming from a "
+                                f"object of the class TorchImageSegmentation.")
+        else: 
+            raise ValueError('self.classifier or self.image_segmentation parameter is None. Please provide both objects.')
+
+
     def show_counterfactual(self) -> None :
         '''Show the counterfactual obtained.'''
         if self._counterfactual_id is None:
@@ -124,6 +137,7 @@ class SEDCTExplainer():
         if not isinstance(show, bool):
             raise TypeError(f'show parameter must be of type bool. Provided type ({type(show)}) is incorrect.')
 
+        self._check_compatibility()
 
         image = self.image_segmentation.get_image()
         n_segments = self.image_segmentation.get_n_segments()
